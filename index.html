@@ -114,12 +114,40 @@
 
   .soon {
     font-size: 10px;
+    font-weight: 700;
     background: var(--bg);
     color: var(--text-tertiary);
     border-radius: 4px;
     padding: 1px 5px;
     margin-left: auto;
+    letter-spacing: 0.04em;
   }
+
+  .nav-parent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    cursor: default;
+    margin-bottom: 2px;
+  }
+
+  .nav-parent-icon { font-size: 14px; }
+
+  .nav-subitems {
+    padding-left: 12px;
+    border-left: 2px solid var(--border);
+    margin-left: 10px;
+    margin-bottom: 4px;
+  }
+
+  .nav-item.nav-sub { font-size: 13px; color: var(--text-secondary); }
+  .nav-item.nav-sub.active { background: transparent; color: var(--accent); font-weight: 500; }
 
   /* Main content */
   .main { flex: 1; padding: 48px 56px; max-width: 900px; }
@@ -389,47 +417,56 @@
   <!-- Sidebar -->
   <nav class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">AF</div>
+      <div class="logo-icon">K</div>
       <div>
-        <div class="logo-text">AI File Hub</div>
-        <div class="logo-sub">Research · Trial</div>
+        <div class="logo-text">Kartka</div>
+        <div class="logo-sub">Документація продукту</div>
       </div>
     </div>
 
     <div class="nav-section">
-      <div class="nav-label">Дослідження</div>
-      <a class="nav-item active" href="#product">
-        <span class="nav-num">1</span> Продукт
-      </a>
-      <a class="nav-item" href="#essence">
-        <span class="nav-num">2</span> Суть продукту
-      </a>
-      <a class="nav-item" href="#pains">
-        <span class="nav-num">3</span> Болі
-      </a>
-      <a class="nav-item" href="#competitors">
-        <span class="nav-num">4</span> Конкуренти
-      </a>
-      <a class="nav-item" href="#patterns">
-        <span class="nav-num">5</span> UX-патерни
-      </a>
-      <a class="nav-item" href="#benchmark">
-        <span class="nav-num">6</span> Бенчмарк
-      </a>
-      <a class="nav-item" href="#ia">
-        <span class="nav-num">7</span> ІА
-      </a>
-      <a class="nav-item" href="#conclusions">
-        <span class="nav-num">8</span> Висновки
-      </a>
+      <div class="nav-label">Сторінки</div>
+
+      <div class="nav-parent active">
+        <span class="nav-parent-icon">📄</span> Дослідження
+      </div>
+      <div class="nav-subitems">
+        <a class="nav-item nav-sub active" href="#product">
+          <span class="nav-num">1</span> Продукт
+        </a>
+        <a class="nav-item nav-sub" href="#essence">
+          <span class="nav-num">2</span> Суть продукту
+        </a>
+        <a class="nav-item nav-sub" href="#pains">
+          <span class="nav-num">3</span> Болі
+        </a>
+        <a class="nav-item nav-sub" href="#competitors">
+          <span class="nav-num">4</span> Конкуренти
+        </a>
+        <a class="nav-item nav-sub" href="#patterns">
+          <span class="nav-num">5</span> UX-патерни
+        </a>
+        <a class="nav-item nav-sub" href="#benchmark">
+          <span class="nav-num">6</span> Бенчмарк
+        </a>
+        <a class="nav-item nav-sub" href="#ia">
+          <span class="nav-num">7</span> ІА
+        </a>
+        <a class="nav-item nav-sub" href="#conclusions">
+          <span class="nav-num">8</span> Висновки
+        </a>
+      </div>
+
+      <a class="nav-item" href="#"><span>🧭</span> JTBD</a>
+      <a class="nav-item" href="#"><span>👥</span> Персони</a>
     </div>
 
     <div class="nav-section">
-      <div class="nav-label">Дизайн</div>
-      <a class="nav-item" href="#"><span>🎨</span> Дизайн-система <span class="soon">soon</span></a>
-      <a class="nav-item" href="#"><span>🧩</span> Компоненти <span class="soon">soon</span></a>
-      <a class="nav-item" href="#"><span>🖼️</span> Вайрфрейми <span class="soon">soon</span></a>
-      <a class="nav-item" href="#"><span>🚀</span> Хендофф <span class="soon">soon</span></a>
+      <div class="nav-label">Скоро</div>
+      <a class="nav-item" href="#"><span>🎨</span> Дизайн-система <span class="soon">SOON</span></a>
+      <a class="nav-item" href="#"><span>🧩</span> Компоненти <span class="soon">SOON</span></a>
+      <a class="nav-item" href="#"><span>🖼️</span> Вайрфрейми <span class="soon">SOON</span></a>
+      <a class="nav-item" href="#"><span>🚀</span> Хендофф <span class="soon">SOON</span></a>
     </div>
   </nav>
 
