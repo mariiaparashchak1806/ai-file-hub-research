@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI File Hub — Research</title>
+<style>
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --border: #E4E2DC;
+    --text-primary: #1A1917;
+    --text-secondary: #6B6860;
+    --text-tertiary: #A09E99;
+    --accent: #2D5BE3;
+    --accent-light: #EEF2FD;
+    --tag-fact-bg: #E8F5E9; --tag-fact: #2E7D32;
+    --tag-interp-bg: #FFF8E1; --tag-interp: #F57F17;
+    --tag-hypo-bg: #FCE4EC; --tag-hypo: #C62828;
+    --tag-unknown-bg: #F3F0FF; --tag-unknown: #5E35B1;
+    --take-bg: #E8F5E9; --take: #1B5E20;
+    --adapt-bg: #FFF3E0; --adapt: #BF360C;
+    --avoid-bg: #FFEBEE; --avoid: #B71C1C;
+    --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-main);
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* Layout */
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 24px 0;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 14px;
+  }
+
+  .logo-text { font-weight: 600; font-size: 14px; }
+  .logo-sub { font-size: 11px; color: var(--text-secondary); }
+
+  .nav-section { margin-bottom: 20px; padding: 0 12px; }
+
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    padding: 0 8px;
+    margin-bottom: 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .nav-item:hover { background: var(--bg); color: var(--text-primary); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+  .nav-num {
+    width: 18px; height: 18px;
+    background: var(--bg);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-num { background: var(--accent); color: white; }
+
+  .soon {
+    font-size: 10px;
+    background: var(--bg);
+    color: var(--text-tertiary);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: auto;
+  }
+
+  /* Main content */
+  .main { flex: 1; padding: 48px 56px; max-width: 900px; }
+
+  .page-header { margin-bottom: 48px; }
+  .page-eyebrow { font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px; }
+  .page-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .page-desc { color: var(--text-secondary); font-size: 14px; max-width: 560px; line-height: 1.6; }
+
+  /* Tags */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 40px;
+  }
+
+  .tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tag-fact { background: var(--tag-fact-bg); color: var(--tag-fact); }
+  .tag-interp { background: var(--tag-interp-bg); color: var(--tag-interp); }
+  .tag-hypo { background: var(--tag-hypo-bg); color: var(--tag-hypo); }
+  .tag-unknown { background: var(--tag-unknown-bg); color: var(--tag-unknown); }
+
+  .verdict {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .verdict-take { background: var(--take-bg); color: var(--take); }
+  .verdict-adapt { background: var(--adapt-bg); color: var(--adapt); }
+  .verdict-avoid { background: var(--avoid-bg); color: var(--avoid); }
+
+  /* Sections */
+  .section { margin-bottom: 64px; scroll-margin-top: 32px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 7px;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .section-title { font-size: 18px; font-weight: 700; }
+  .section-source { font-size: 12px; color: var(--text-tertiary); margin-left: auto; font-family: var(--font-mono); }
+
+  /* Subsections */
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 24px 0 10px;
+  }
+
+  p { color: var(--text-secondary); margin-bottom: 12px; font-size: 14px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-body { font-size: 13px; color: var(--text-secondary); }
+
+  /* Info box */
+  .infobox {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  /* Warning box */
+  .warnbox {
+    background: #FFF8E1;
+    border-left: 3px solid #F9A825;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #5D4037;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0;
+  }
+
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  td strong { color: var(--text-primary); font-weight: 600; }
+
+  /* List */
+  ul.styled { padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+  ul.styled li {
+    padding-left: 20px;
+    position: relative;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  ul.styled li::before {
+    content: '·';
+    position: absolute;
+    left: 6px;
+    color: var(--text-tertiary);
+    font-weight: 700;
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+
+  /* Placeholder blocks */
+  .placeholder {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    margin: 16px 0;
+  }
+
+  .placeholder-icon { font-size: 24px; margin-bottom: 8px; }
+
+  /* Pain pattern card */
+  .pain-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .pain-num {
+    width: 24px; height: 24px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+
+  .pain-content { flex: 1; }
+  .pain-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .pain-desc { font-size: 12px; color: var(--text-secondary); }
+  .pain-arrow { font-size: 12px; color: var(--accent); margin-top: 4px; }
+
+  /* Competitor row */
+  .comp-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* Hypothesis */
+  .hypothesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .hyp-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 6px; }
+  .hyp-if { color: var(--text-secondary); }
+  .hyp-then { color: var(--text-primary); font-weight: 500; }
+  .hyp-because { color: var(--text-tertiary); }
+
+  /* Progress indicator */
+  .progress-row {
+    display: flex; gap: 8px; margin: 20px 0;
+  }
+  .progress-chip {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .chip-done { background: var(--tag-fact-bg); color: var(--tag-fact); }
+  .chip-inprogress { background: var(--tag-interp-bg); color: var(--tag-interp); }
+  .chip-todo { background: var(--bg); color: var(--text-tertiary); border: 1px solid var(--border); }
+
+  /* Footer */
+  .footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 20px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">AF</div>
+      <div>
+        <div class="logo-text">AI File Hub</div>
+        <div class="logo-sub">Research · Trial</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Дослідження</div>
+      <a class="nav-item active" href="#product">
+        <span class="nav-num">1</span> Продукт
+      </a>
+      <a class="nav-item" href="#essence">
+        <span class="nav-num">2</span> Суть продукту
+      </a>
+      <a class="nav-item" href="#pains">
+        <span class="nav-num">3</span> Болі
+      </a>
+      <a class="nav-item" href="#competitors">
+        <span class="nav-num">4</span> Конкуренти
+      </a>
+      <a class="nav-item" href="#patterns">
+        <span class="nav-num">5</span> UX-патерни
+      </a>
+      <a class="nav-item" href="#benchmark">
+        <span class="nav-num">6</span> Бенчмарк
+      </a>
+      <a class="nav-item" href="#ia">
+        <span class="nav-num">7</span> ІА
+      </a>
+      <a class="nav-item" href="#conclusions">
+        <span class="nav-num">8</span> Висновки
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Дизайн</div>
+      <a class="nav-item" href="#"><span>🎨</span> Дизайн-система <span class="soon">soon</span></a>
+      <a class="nav-item" href="#"><span>🧩</span> Компоненти <span class="soon">soon</span></a>
+      <a class="nav-item" href="#"><span>🖼️</span> Вайрфрейми <span class="soon">soon</span></a>
+      <a class="nav-item" href="#"><span>🚀</span> Хендофф <span class="soon">soon</span></a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <div class="page-header">
+      <div class="page-eyebrow">Trial · 3 дні · Kickoff: середа 12pm Germany / 13:00 Kyiv</div>
+      <h1 class="page-title">AI File Hub — Research</h1>
+      <p class="page-desc">
+        Платформа для розумного управління файлами. Автоматичне перейменування, AI-теги, метадані, природньомовний пошук. Desktop-перший (Windows), B2C MVP → B2B потенціал.
+      </p>
+    </div>
+
+    <div class="progress-row">
+      <span class="progress-chip chip-done">✓ Бріф отримано</span>
+      <span class="progress-chip chip-inprogress">→ Research</span>
+      <span class="progress-chip chip-todo">Вайрфрейми</span>
+      <span class="progress-chip chip-todo">Kickoff</span>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <span class="tag tag-fact">● факт — підтверджено з брифу</span>
+      <span class="tag tag-interp">◑ інтерпретація</span>
+      <span class="tag tag-hypo">○ гіпотеза без валідації</span>
+      <span class="tag tag-unknown">? невідомо / не з'ясовано</span>
+      <span class="verdict verdict-take">БЕРЕМО</span>
+      <span class="verdict verdict-adapt">АДАПТУЄМО</span>
+      <span class="verdict verdict-avoid">УНИКАЄМО</span>
+    </div>
+
+    <!-- 1. Продукт -->
+    <section class="section" id="product">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2 class="section-title">Продукт коротко</h2>
+        <span class="section-source">джерело: бріф від AE</span>
+      </div>
+
+      <h3>Для кого <span class="tag tag-fact">факт</span></h3>
+      <p>B2C при запуску: фрилансери, малий бізнес, індивідуали з болем хаосу у файлах. B2B/enterprise — потенціал після MVP. Засновник сам є target user — особисто страждає від folder-based підходу.</p>
+
+      <h3>Що потрібно задизайнити <span class="tag tag-fact">факт</span></h3>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">🖥️ Desktop app</div>
+          <div class="card-body">Windows, перший пріоритет. Основний продукт MVP.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🌐 Web dashboard</div>
+          <div class="card-body">Управління файлами. Ключовий екран для оцінки на trial.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📄 Landing page</div>
+          <div class="card-body">Маркетингова сторінка продукту.</div>
+        </div>
+      </div>
+
+      <div class="infobox">Mobile — розглядається пізніше. Обсяг: 2 місяці. Є потреба в UX research, wireframes, visual design, design system, UI kit для handoff.</div>
+
+      <h3>Фічі MVP <span class="tag tag-fact">факт</span></h3>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Фіча</th>
+            <th>Пріоритет</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><strong>Smart file storage & organization</strong> — всі файли в одному місці, список замість папок</td><td>Core</td></tr>
+          <tr><td>2</td><td><strong>Auto renaming, tagging, metadata enrichment</strong> — AI перейменовує і збагачує файли</td><td>Core</td></tr>
+          <tr><td>3</td><td><strong>Natural language search + saved searches</strong> — пошук як запит, збережені як "virtual folders"</td><td>Core</td></tr>
+          <tr><td>4</td><td><strong>User onboarding</strong> — підключення папок для моніторингу</td><td>Core</td></tr>
+          <tr><td>5</td><td><strong>File sharing + "invite"</strong> — referral-based storage</td><td>Secondary</td></tr>
+          <tr><td>6</td><td><strong>Profile, settings, premium features</strong> — upgrade screens</td><td>Secondary</td></tr>
+          <tr><td>7</td><td><strong>Dashboard + detail views</strong> — огляд і деталі файлів</td><td>Core</td></tr>
+          <tr><td>8</td><td><strong>AI summaries of files</strong> — генерація резюме через LLM</td><td>Secondary</td></tr>
+          <tr><td>9</td><td><strong>Landing page</strong> — маркетингова</td><td>Secondary</td></tr>
+        </tbody>
+      </table>
+
+      <h3>User flows <span class="tag tag-fact">факт</span></h3>
+      <ul class="styled">
+        <li>Onboarding (підключення папок)</li>
+        <li>File upload & monitoring</li>
+        <li>Search (keywords + natural language)</li>
+        <li>Save searches → virtual folders</li>
+        <li>Invite users</li>
+        <li>Upgrade to premium</li>
+        <li>File sharing</li>
+        <li>Profile/settings management</li>
+      </ul>
+
+      <h3>Таймлайн і тривалість <span class="tag tag-fact">факт</span></h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">⚡ Старт</div>
+          <div class="card-body">ASAP. Немає фіксованого дедлайну, але є urgency — "до того як втрачено momentum".</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📅 Тривалість</div>
+          <div class="card-body">~2 місяці full-time дизайнер для MVP. Може розширитись.</div>
+        </div>
+      </div>
+
+      <h3>Поточний стан <span class="tag tag-fact">факт</span></h3>
+      <p>Є ранній Figma-прототип ("Figma Make") — зроблений засновником. Не фінальний продукт. Є деякі функціональні flows і екрани.</p>
+      <div class="warnbox">⚠️ Figma-прототип є — попросити доступ на kickoff. Він буде стартовою точкою для розширення, не перероблення з нуля.</div>
+    </section>
+
+    <!-- 2. Суть -->
+    <section class="section" id="essence">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2 class="section-title">Суть продукту</h2>
+        <span class="section-source">джерело: слова клієнта</span>
+      </div>
+
+      <div class="infobox">
+        <strong>Серце продукту — ЗНАЙТИ БУДЬ-ЯКИЙ ФАЙЛ ЗА СЕКУНДИ, не думаючи де він.</strong><br>
+        Людина перестає тримати структуру папок у голові. Замість цього — один список + пошук природньою мовою.
+      </div>
+
+      <h3>Цитати засновника <span class="tag tag-fact">факт</span></h3>
+      <div class="card">
+        <ul class="styled">
+          <li>"A desktop app monitors relevant folders" — агент стежить за обраними папками</li>
+          <li>"Files get a new name automatically following a clear structure" — авто-перейменування</li>
+          <li>"Metadata of the files will be structurally enhanced by AI" — збагачення метаданих</li>
+          <li>"All files are in only one / no folder (just a list)" — парадигма без папок</li>
+          <li>"Searching will be possible based on keywords or natural language" — NLP-пошук</li>
+          <li>"Searches can be saved showing like virtual folders" — збережені запити як "папки"</li>
+          <li>"The design should be super minimalistic, but by using the app one should feel the power and convenience. Trustworthiness is critical."</li>
+        </ul>
+      </div>
+
+      <h3>Принцип ключовий <span class="tag tag-interp">інтерпретація</span></h3>
+      <p>Мінімалізм ≠ бідність. Клієнт хоче відчуття потужності і контролю в дуже чистому інтерфейсі. Trustworthiness — не просто слово: система, що перейменовує твої файли, повинна давати абсолютну впевненість що нічого не зіпсовано.</p>
+
+      <h3>Межі продукту <span class="tag tag-fact">факт</span></h3>
+      <ul class="styled">
+        <li>Не хмарне сховище (не Google Drive замінник) — розумний агент поверх існуючих файлів</li>
+        <li>Hosting: European Secure Hosting Environment</li>
+        <li>Немає обмежень tech stack на дизайн-стадії</li>
+        <li>Mobile app — поза MVP</li>
+      </ul>
+    </section>
+
+    <!-- 3. Болі -->
+    <section class="section" id="pains">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2 class="section-title">Болі користувачів</h2>
+        <span class="section-source">заповнити після research</span>
+      </div>
+
+      <div class="warnbox">⚠️ Цей розділ потребує заповнення після desk research — відгуки на конкурентів, форуми, Reddit, App Store reviews.</div>
+
+      <h3>Больові точки з брифу <span class="tag tag-fact">факт</span></h3>
+
+      <div class="pain-card">
+        <div class="pain-num">1</div>
+        <div class="pain-content">
+          <div class="pain-title">Folder-based підхід ламається з часом</div>
+          <div class="pain-desc">Чим більше файлів — тим менш логічна структура папок. Важко знайти потрібне.</div>
+          <div class="pain-arrow">→ рішення: flat list + пошук замість ієрархії</div>
+        </div>
+        <span class="tag tag-fact">факт</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-num">2</div>
+        <div class="pain-content">
+          <div class="pain-title">Пошук по файлах — повільний і неточний</div>
+          <div class="pain-desc">Стандартний пошук ОС не розуміє контексту, не підтримує overlapping queries.</div>
+          <div class="pain-arrow">→ рішення: NLP search + збережені запити</div>
+        </div>
+        <span class="tag tag-fact">факт</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-num">3</div>
+        <div class="pain-content">
+          <div class="pain-title">Ручне перейменування і тегування — нудна рутина</div>
+          <div class="pain-desc">Люди або не роблять це взагалі, або витрачають час на організацію замість роботи.</div>
+          <div class="pain-arrow">→ рішення: AI auto-rename + auto-tagging</div>
+        </div>
+        <span class="tag tag-interp">інтерпретація</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-num">4</div>
+        <div class="pain-content">
+          <div class="pain-title">Файли розкидані по різних місцях</div>
+          <div class="pain-desc">Downloads, Desktop, Documents, хмари — нема одного place of truth.</div>
+          <div class="pain-arrow">→ рішення: моніторинг обраних папок, єдиний dashboard</div>
+        </div>
+        <span class="tag tag-hypo">гіпотеза</span>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-num">5</div>
+        <div class="pain-content">
+          <div class="pain-title">Страх що AI зіпсує файли</div>
+          <div class="pain-desc">Продукт, який автоматично перейменовує — викликає тривогу. Що якщо щось зникне?</div>
+          <div class="pain-arrow">→ критично: trustworthiness, undo, прозорість дій AI</div>
+        </div>
+        <span class="tag tag-hypo">гіпотеза</span>
+      </div>
+
+      <div class="placeholder">
+        <div class="placeholder-icon">📊</div>
+        Додати: аналіз відгуків конкурентів (Hazel, Alfred, Everything, Dropbox, TagSpaces)<br>
+        Формат: "Що бісить / Чому кидають / За що хвалять"
+      </div>
+    </section>
+
+    <!-- 4. Конкуренти -->
+    <section class="section" id="competitors">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2 class="section-title">Конкуренти</h2>
+        <span class="section-source">заповнити після research</span>
+      </div>
+
+      <h3>Попередня карта конкурентів <span class="tag tag-hypo">гіпотеза</span></h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Продукт</th>
+            <th>Аудиторія</th>
+            <th>Основа</th>
+            <th>Ключовий механізм</th>
+            <th>Довіра</th>
+            <th>Монетизація</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Hazel (Mac)</strong></td>
+            <td>Mac power users</td>
+            <td>Rule-based file automation</td>
+            <td>Правила → авто-дії з файлами</td>
+            <td>Платний, зрілий</td>
+            <td>One-time $42</td>
+          </tr>
+          <tr>
+            <td><strong>Alfred / Raycast</strong></td>
+            <td>Mac power users</td>
+            <td>Launcher + пошук</td>
+            <td>Швидкий доступ, workflows</td>
+            <td>Trusted brand</td>
+            <td>Freemium</td>
+          </tr>
+          <tr>
+            <td><strong>Everything (Win)</strong></td>
+            <td>Windows users</td>
+            <td>Миттєвий пошук файлів</td>
+            <td>Індексація + instant search</td>
+            <td>Free, open</td>
+            <td>Free</td>
+          </tr>
+          <tr>
+            <td><strong>TagSpaces</strong></td>
+            <td>Privacy-focused users</td>
+            <td>File tagging & organizer</td>
+            <td>Теги + локальна база</td>
+            <td>Open source / платний pro</td>
+            <td>Freemium</td>
+          </tr>
+          <tr>
+            <td><strong>Dropbox / Google Drive</strong></td>
+            <td>Broad consumer + B2B</td>
+            <td>Cloud storage</td>
+            <td>Sync + share</td>
+            <td>Enterprise-grade</td>
+            <td>Freemium + B2B</td>
+          </tr>
+          <tr>
+            <td><strong>→ AI File Hub</strong></td>
+            <td>Freelancers, SMB (B2C MVP)</td>
+            <td>AI-powered file manager</td>
+            <td>Auto-rename + NLP search + flat list</td>
+            <td>European hosting, trustworthy AI</td>
+            <td>? (freemium implied)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="warnbox">⚠️ Конкурентний аналіз потребує доповнення: живі скріни, відгуки, feature gaps. Особливо Hazel (Mac) і Everything (Win) — найближчі за механікою.</div>
+
+      <h3>Наш диференціатор <span class="tag tag-interp">інтерпретація</span></h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🎯 Відкриті ніші</div>
+          <ul class="styled">
+            <li>AI auto-rename без ручних правил (vs Hazel)</li>
+            <li>NLP search без індексу (vs Everything)</li>
+            <li>Flat list парадигма — "no folder" підхід</li>
+            <li>Windows-first (vs Mac-only конкуренти)</li>
+            <li>European hosting — довіра в EU ринку</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">⚠️ Ризики</div>
+          <ul class="styled">
+            <li>Trustworthiness: AI перейменовує файли — страх</li>
+            <li>Onboarding: пустий список на старті</li>
+            <li>Звичка: люди звикли до папок</li>
+            <li>Privacy: хто має доступ до файлів?</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. UX-патерни -->
+    <section class="section" id="patterns">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2 class="section-title">UX-патерни</h2>
+        <span class="section-source">заповнити після research</span>
+      </div>
+
+      <h3>Попередня матриця вердиктів <span class="tag tag-hypo">гіпотеза</span></h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Патерн</th>
+            <th>Джерело</th>
+            <th>Вердикт</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Flat list замість tree view</td>
+            <td>Apple Mail, Linear</td>
+            <td><span class="verdict verdict-take">БЕРЕМО</span></td>
+          </tr>
+          <tr>
+            <td>Search as primary navigation</td>
+            <td>Spotlight, Raycast, Notion</td>
+            <td><span class="verdict verdict-take">БЕРЕМО</span></td>
+          </tr>
+          <tr>
+            <td>Saved searches як "smart folders"</td>
+            <td>Apple Mail Smart Mailboxes, Gmail labels</td>
+            <td><span class="verdict verdict-adapt">АДАПТУЄМО</span></td>
+          </tr>
+          <tr>
+            <td>Inline AI action з preview перед застосуванням</td>
+            <td>Notion AI, Linear AI</td>
+            <td><span class="verdict verdict-take">БЕРЕМО</span></td>
+          </tr>
+          <tr>
+            <td>Bulk rename з підтвердженням</td>
+            <td>Adobe Bridge, Hazel</td>
+            <td><span class="verdict verdict-adapt">АДАПТУЄМО</span></td>
+          </tr>
+          <tr>
+            <td>Sidebar з folder tree як основна навігація</td>
+            <td>Explorer, Finder</td>
+            <td><span class="verdict verdict-avoid">УНИКАЄМО</span></td>
+          </tr>
+          <tr>
+            <td>Складні правила автоматизації (rule builder)</td>
+            <td>Hazel</td>
+            <td><span class="verdict verdict-avoid">УНИКАЄМО</span></td>
+          </tr>
+          <tr>
+            <td>Прозорість дій AI — лог що і чому змінилось</td>
+            <td>?</td>
+            <td><span class="verdict verdict-take">БЕРЕМО</span></td>
+          </tr>
+          <tr>
+            <td>Global undo для AI-дій</td>
+            <td>?</td>
+            <td><span class="verdict verdict-take">БЕРЕМО</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="placeholder">
+        <div class="placeholder-icon">🔍</div>
+        Додати: скріни з Mobbin / живих продуктів для кожного патерну<br>
+        Особливо: як Linear, Notion, Raycast роблять command bar та flat lists
+      </div>
+    </section>
+
+    <!-- 6. Бенчмарк -->
+    <section class="section" id="benchmark">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2 class="section-title">Бенчмарк</h2>
+        <span class="section-source">заповнити після research</span>
+      </div>
+
+      <h3>Вимір 1 — Мінімалізм + відчуття потужності</h3>
+      <p>Клієнт сказав: "super minimalistic, but feel the power." Це рідкісна комбінація — знайти референси де це зроблено добре.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">Linear</div>
+          <div class="card-body">Чистий список + keyboard shortcuts + відчуття швидкості. Benchmark для "powerful minimal".</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Raycast</div>
+          <div class="card-body">Command bar + flat list результатів. Search-first парадигма на desktop.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Notion</div>
+          <div class="card-body">Inline AI дії з preview. Як показати що AI щось зробив, не лякаючи.</div>
+        </div>
+      </div>
+
+      <h3>Вимір 2 — Trustworthiness при auto-actions</h3>
+      <p>Продукт автоматично змінює файли. Як передати відчуття безпеки і контролю?</p>
+
+      <div class="placeholder">
+        <div class="placeholder-icon">🛡️</div>
+        Дослідити: як Grammarly, Figma, Hazel показують авто-дії і undo.<br>
+        Шкала 1–5 за: прозорість / undo / preview перед дією / лог змін
+      </div>
+
+      <h3>Вимір 3 — Onboarding з порожнього стану</h3>
+      <div class="placeholder">
+        <div class="placeholder-icon">🚀</div>
+        Дослідити: як Dropbox, Linear, Notion ведуть нового юзера до першої цінності.<br>
+        Ризик №1: порожній список після встановлення — що показати?
+      </div>
+    </section>
+
+    <!-- 7. ІА -->
+    <section class="section" id="ia">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2 class="section-title">Інформаційна архітектура</h2>
+        <span class="section-source">гіпотеза для обговорення</span>
+      </div>
+
+      <h3>Обрана вісь організації <span class="tag tag-hypo">гіпотеза</span></h3>
+      <div class="infobox">
+        <strong>Search-first + flat list як домівка.</strong> Головна дія — знайти файл. Навігація — не папки, а saved searches і фільтри. Файли — один великий список з метаданими.
+      </div>
+
+      <h3>Структура верхнього рівня</h3>
+      <table>
+        <thead>
+          <tr><th>Секція</th><th>Роль</th><th>Вердикт</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>All files</strong></td><td>Єдиний плоский список усіх файлів</td><td>🥇 головна домівка</td></tr>
+          <tr><td><strong>Search / filter bar</strong></td><td>Primary action — NLP + keyword пошук</td><td>🥇 always visible</td></tr>
+          <tr><td><strong>Saved searches</strong></td><td>"Virtual folders" — збережені запити</td><td>🥈 sidebar / left nav</td></tr>
+          <tr><td><strong>Activity / AI log</strong></td><td>Що AI зробив, прозорість дій</td><td>🥈 trustworthiness feature</td></tr>
+          <tr><td><strong>Settings / monitored folders</strong></td><td>Які папки моніторяться</td><td>Secondary</td></tr>
+          <tr><td><strong>Profile / premium</strong></td><td>Upgrade, sharing</td><td>Secondary</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Відкриті питання ІА <span class="tag tag-unknown">?</span></h3>
+      <ul class="styled">
+        <li>Де живе "detail view" файлу — side panel чи окремий екран?</li>
+        <li>Чи є "recently changed by AI" як окремий view?</li>
+        <li>Як виглядає onboarding flow — wizard чи inline?</li>
+        <li>Sharing — куди веде: окремий розділ чи action на файлі?</li>
+      </ul>
+    </section>
+
+    <!-- 8. Висновки -->
+    <section class="section" id="conclusions">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <h2 class="section-title">Висновки та відкриті питання</h2>
+        <span class="section-source">оновлюється</span>
+      </div>
+
+      <h3>Гіпотези "якщо / то / бо" <span class="tag tag-hypo">гіпотеза</span></h3>
+
+      <div class="hypothesis">
+        <div class="hyp-label">Гіпотеза 1 — Trustworthiness</div>
+        <span class="hyp-if">Якщо</span> кожна AI-дія показує preview + має global undo,
+        <span class="hyp-then">то</span> знімемо страх "AI зіпсує мої файли",
+        <span class="hyp-because">бо</span> контроль і зворотність — основа довіри до авто-систем.
+      </div>
+
+      <div class="hypothesis">
+        <div class="hyp-label">Гіпотеза 2 — Onboarding</div>
+        <span class="hyp-if">Якщо</span> onboarding = вибір першої папки + миттєвий результат (файли з'явились, renamed),
+        <span class="hyp-then">то</span> подолаємо "пустий список" як ризик №1 adoption,
+        <span class="hyp-because">бо</span> перша цінність має бути видна в перші хвилини.
+      </div>
+
+      <div class="hypothesis">
+        <div class="hyp-label">Гіпотеза 3 — Мінімалізм vs потужність</div>
+        <span class="hyp-if">Якщо</span> dashboard = flat list + search bar + metadata columns (без sidebar з папками),
+        <span class="hyp-then">то</span> досягнемо "minimalistic but powerful" відчуття,
+        <span class="hyp-because">бо</span> Linear і Raycast довели що це поєднання можливе.
+      </div>
+
+      <h3>Питання для kickoff <span class="tag tag-unknown">?</span></h3>
+      <div class="card">
+        <ul class="styled">
+          <li>Що відбувається якщо AI перейменувало файл неправильно — є undo? Як це виглядає?</li>
+          <li>Де фізично зберігаються файли після обробки — в оригінальних папках чи переносяться?</li>
+          <li>Що таке "virtual folder" — збережений пошук чи справжня папка в ОС?</li>
+          <li>Sharing — це публічне посилання чи invite конкретної людини?</li>
+          <li>Що для тебе "trustworthy" виглядає в UI — що саме має передавати це відчуття?</li>
+          <li>Є скріни або референси які ти особисто любиш — продукти з "powerful minimal"?</li>
+          <li>Який перший екран ти хочеш побачити після 3-денного trial?</li>
+        </ul>
+      </div>
+
+      <h3>Що зроблено / що лишилось <span class="tag tag-fact">факт</span></h3>
+      <table>
+        <thead>
+          <tr><th>Розділ</th><th>Статус</th><th>Що потрібно</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Бріф-синтез</td><td>✅ Зроблено</td><td>—</td></tr>
+          <tr><td>Болі користувачів</td><td>🔄 В процесі</td><td>Desk research, конкурентні відгуки</td></tr>
+          <tr><td>Конкуренти</td><td>🔄 Початок</td><td>Живі скріни, feature gaps</td></tr>
+          <tr><td>UX-патерни</td><td>⬜ Не розпочато</td><td>Mobbin, живі продукти</td></tr>
+          <tr><td>Бенчмарк</td><td>⬜ Не розпочато</td><td>Linear, Raycast, Notion, Hazel</td></tr>
+          <tr><td>ІА</td><td>🔄 Гіпотеза</td><td>Перевірити на kickoff</td></tr>
+          <tr><td>Висновки</td><td>🔄 В процесі</td><td>Після доповнення research</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="footer">
+      AI File Hub — Research synthesis · Trial: 3 дні · Джерело: бріф від AE · Оновлюється по мірі research
+    </div>
+
+  </main>
+</div>
+
+<script>
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.nav-item').forEach(i => {
+          i.classList.toggle('active', i.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.section[id]').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
